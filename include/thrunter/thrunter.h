@@ -73,7 +73,8 @@ typedef struct {
 } Process;
 
 int prepare_teb(CPUState *cpu);
-int run_thrunter(CPUState *cpu);
-Process *init_process(CPUState *cpu);
+int trace_syscall(CPUState *cpu);
+int hook_new_proc(CPUState *cpu);
+Process *get_curr_proc(CPUState *cpu);
 
 #endif

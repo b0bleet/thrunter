@@ -28,6 +28,9 @@
 #include "helper-tcg.h"
 #include "seg_helper.h"
 
+#include "thrunter/thrunter.h"
+#include "thrunter/kernel.h"
+
 int get_pg_mode(CPUX86State *env)
 {
     int pg_mode = 0;
@@ -983,14 +986,11 @@ static void do_interrupt64(CPUX86State *env, int intno, int is_int,
 void helper_sysret(CPUX86State *env, int dflag)
 {
     int cpl, selector;
-
-    hwaddr kthread = cpu_ldq_data(env, env->kernelgsbase + 0x188);
-    target_ulong syscall_number = cpu_ldq_data(env, kthread + 0x1f8);
-    if (syscall_number == 0xaa) {
-        hwaddr ktrap_frame = cpu_ldq_data(env, kthread + 0x1d8);
-        hwaddr rsp = cpu_ldq_data(env, ktrap_frame + 0x180) + 0x8;
-        target_ulong pid = cpu_ldq_data(env, rsp + 0x3a0);
-        printf("New PID: %ld\n", pid);
+    
+    CPUState *cs = env_cpu(env);
+    target_ulong syscall_number = curr_syscall_num(cs);
+    if (syscall_number == SYSCALL_CREATE_USER_PROCESS) {
+        hook_new_proc(cs);
     }
 
     if (!(env->efer & MSR_EFER_SCE)) {

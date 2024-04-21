@@ -35,9 +35,11 @@ void helper_syscall(CPUX86State *env, int next_eip_addend)
     /* Execute THRUNTER hooker */
     int ret;
     CPUState *cs = env_cpu(env);
-    ret = run_thrunter(cs);
+    ret = trace_syscall(cs);
     if (ret < 0) {
+#ifdef THRUNTER_DEBUG
         fprintf(stderr, "Unable to run THRUNTER\n");
+#endif
     }
 
     if (!(env->efer & MSR_EFER_SCE)) {

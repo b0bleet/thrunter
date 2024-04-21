@@ -22,7 +22,9 @@ static int init_process_info(CPUState *cpu, Process *proc) {
 
     ret = init_peb(cpu, &peb);
     if (ret) {
+#ifdef THRUNTER_DEBUG
         fprintf(stderr, "Unable to prepare PEB\n");
+#endif
         return ret;
     }
 
@@ -32,7 +34,9 @@ static int init_process_info(CPUState *cpu, Process *proc) {
                         &user_proc_params,
                         sizeof(RTL_USER_PROCESS_PARAMETERS),
                         0)) {
+#ifdef THRUNTER_DEBUG
         fprintf(stderr, "Unable to retrieve process parameters\n");
+#endif
         return -1;
     }
 
@@ -43,7 +47,9 @@ static int init_process_info(CPUState *cpu, Process *proc) {
                         path_name,
                         path_name_len,
                         0)) {
+#ifdef THRUNTER_DEBUG
         fprintf(stderr, "Unable to retrieve executable path name\n");
+#endif
         ret = -1;
         goto err;
     }
@@ -54,16 +60,24 @@ err:
     return ret;
 }
 
-Process *init_process(CPUState *cpu) {
+Process *get_curr_proc(CPUState *cpu) {
     int ret;
     Process *proc;
     TEB teb;
+
+    CPUX86State *env = cpu_env(cpu);
+    target_ulong cpl = env->segs[R_CS].selector & 0x3;
+    if (cpl != 0x3) {
+        return NULL;
+    }
 
     proc = g_malloc0(sizeof(Process));
 
     ret = init_teb(cpu, &teb);
     if (ret) {
+#ifdef THRUNTER_DEBUG
         fprintf(stderr, "Unable to prepare TEB\n");
+#endif
         g_free(proc);
         return NULL;
     }
@@ -71,7 +85,9 @@ Process *init_process(CPUState *cpu) {
 
     ret = init_process_info(cpu, proc);
     if (ret < 0) {
+#ifdef THRUNTER_DEBUG
         fprintf(stderr, "Unable to prepare process information\n");
+#endif
         g_free(proc);
         return NULL;
     }

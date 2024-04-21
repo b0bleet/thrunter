@@ -26,10 +26,19 @@
 #include "exec/cpu_ldst.h"
 #include "tcg/helper-tcg.h"
 #include "../seg_helper.h"
+#include "thrunter/thrunter.h"
 
 void helper_syscall(CPUX86State *env, int next_eip_addend)
 {
     int selector;
+
+    /* Execute THRUNTER hooker */
+    int ret;
+    CPUState *cs = env_cpu(env);
+    ret = run_thrunter(cs);
+    if (ret < 0) {
+        fprintf(stderr, "Unable to run THRUNTER\n");
+    }
 
     if (!(env->efer & MSR_EFER_SCE)) {
         raise_exception_err_ra(env, EXCP06_ILLOP, 0, GETPC());

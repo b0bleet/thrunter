@@ -984,6 +984,15 @@ void helper_sysret(CPUX86State *env, int dflag)
 {
     int cpl, selector;
 
+    hwaddr kthread = cpu_ldq_data(env, env->kernelgsbase + 0x188);
+    target_ulong syscall_number = cpu_ldq_data(env, kthread + 0x1f8);
+    if (syscall_number == 0xaa) {
+        hwaddr ktrap_frame = cpu_ldq_data(env, kthread + 0x1d8);
+        hwaddr rsp = cpu_ldq_data(env, ktrap_frame + 0x180) + 0x8;
+        target_ulong pid = cpu_ldq_data(env, rsp + 0x3a0);
+        printf("New PID: %ld\n", pid);
+    }
+
     if (!(env->efer & MSR_EFER_SCE)) {
         raise_exception_err_ra(env, EXCP06_ILLOP, 0, GETPC());
     }

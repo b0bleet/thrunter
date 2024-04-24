@@ -70,6 +70,7 @@ typedef struct _TEB {
 
 typedef struct {
     uintptr_t pid;
+    uintptr_t parent_pid;
 } Process;
 
 int prepare_teb(CPUState *cpu);

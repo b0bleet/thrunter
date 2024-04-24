@@ -2,7 +2,6 @@
 
 #include "exec/cpu_ldst.h"
 
-
 static inline int init_peb(CPUState *cpu, PEB *peb) {
     CPUX86State *env = cpu_env(cpu);
     hwaddr teb = cpu_ldq_data(env, env->segs[R_GS].base + 0x30);
@@ -64,12 +63,6 @@ Process *get_curr_proc(CPUState *cpu) {
     int ret;
     Process *proc;
     TEB teb;
-
-    CPUX86State *env = cpu_env(cpu);
-    target_ulong cpl = env->segs[R_CS].selector & 0x3;
-    if (cpl != 0x3) {
-        return NULL;
-    }
 
     proc = g_malloc0(sizeof(Process));
 

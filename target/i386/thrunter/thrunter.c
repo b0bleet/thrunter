@@ -24,7 +24,7 @@ int trace_syscall(CPUState *cpu) {
     proc = (Process*) g_hash_table_lookup(processes, GUINT_TO_POINTER(curr_proc->pid));
     if (proc) {
         CPUX86State *env = cpu_env(cpu);
-        printf("PROCESS %ld calls syscall %ld\n", curr_proc->pid, env->regs[R_EAX]);
+        printf("PROC: %"PRIu64" SYSCALL: %"PRIu64"\n", curr_proc->pid, env->regs[R_EAX]);
     }
 
     g_free(curr_proc);
@@ -41,7 +41,7 @@ int hook_new_proc(CPUState *cpu) {
     target_ulong new_pid = get_new_procid(cpu);
     proc = (Process*) g_hash_table_lookup(processes, GUINT_TO_POINTER(new_pid));
     if (proc) {
-        printf("PROC %ld already exists and removed\n", new_pid);
+        printf("PROC: %"PRIu64" already exists and removed\n", new_pid);
         g_hash_table_remove(processes, GUINT_TO_POINTER(new_pid));
     }
 

@@ -7,7 +7,8 @@
 static GHashTable *processes = NULL;
 static GMutex lock;
 
-int trace_syscall(CPUState *cpu) {
+int trace_syscall(CPUState *cpu)
+{
     Process *proc, *curr_proc;
 
     g_mutex_lock(&lock);
@@ -29,7 +30,8 @@ int trace_syscall(CPUState *cpu) {
         return -1;
     }
 
-    proc = (Process*) g_hash_table_lookup(processes, GUINT_TO_POINTER(curr_proc->pid));
+    proc = (Process *)g_hash_table_lookup(processes,
+                                          GUINT_TO_POINTER(curr_proc->pid));
     if (proc) {
 #if 0
         CPUX86State *env = cpu_env(cpu);
@@ -44,7 +46,8 @@ int trace_syscall(CPUState *cpu) {
     return 0;
 }
 
-int hook_new_proc(CPUState *cpu) {
+int hook_new_proc(CPUState *cpu)
+{
     Process *proc = NULL, *syscall_proc = NULL;
 
     syscall_proc = get_curr_proc(cpu);
@@ -54,12 +57,12 @@ int hook_new_proc(CPUState *cpu) {
 #endif
         return -1;
     }
-    
+
     g_mutex_lock(&lock);
     target_ulong new_pid = get_new_procid(cpu);
-    proc = (Process*) g_hash_table_lookup(processes, GUINT_TO_POINTER(new_pid));
+    proc = (Process *)g_hash_table_lookup(processes, GUINT_TO_POINTER(new_pid));
     if (proc) {
-        printf("PROC: %"PRIu64" already exists and removed\n", new_pid);
+        printf("PROC: %" PRIu64 " already exists and removed\n", new_pid);
         g_hash_table_remove(processes, GUINT_TO_POINTER(new_pid));
     }
 
@@ -67,8 +70,8 @@ int hook_new_proc(CPUState *cpu) {
     proc->pid = new_pid;
     proc->parent_pid = syscall_proc->pid;
 
-    g_hash_table_insert(processes, GUINT_TO_POINTER(new_pid), (gpointer) proc);
-    
+    g_hash_table_insert(processes, GUINT_TO_POINTER(new_pid), (gpointer)proc);
+
     g_mutex_unlock(&lock);
 
     return 0;
